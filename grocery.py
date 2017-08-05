@@ -2,6 +2,7 @@
 import sys
 
 CUSTOMER_STATES = {"SHOPPING":1, "IN_LINE":2, "SERVICING":3, "CHECKED_OUT":4}
+CUSTOMER_TYPES = {"A": 1, "B": 2}
 
 class Observer(object):
     """Observer"""
@@ -45,7 +46,9 @@ class Customer(Subject):
 
 class CustomerA(Customer):
     """Type A Customer"""
-    type = "A"
+    def __init__(self, customer_id, arrival_time, item_count):
+        Customer.__init__(self, customer_id, arrival_time, item_count)
+        self.type = CUSTOMER_TYPES["A"]
 
     def select_register(self, registers):
         """Customer Type A always chooses the register with the shortest line
@@ -58,7 +61,9 @@ class CustomerA(Customer):
 
 class CustomerB(Customer):
     """Type B Customer"""
-    type = "B"
+    def __init__(self, customer_id, arrival_time, item_count):
+        Customer.__init__(self, customer_id, arrival_time, item_count)
+        self.type = CUSTOMER_TYPES["B"]
 
     def select_register(self, registers):
         """Customer Type B looks at the last customer in each line, and always
@@ -181,7 +186,7 @@ class Simulator(Observer):
         self.current_tick = self.current_tick + 1
         self.log()
         ready_customers = [customer for customer in self.customers if customer.entry_time == self.current_tick]
-        ready_customers = sorted(list(ready_customers), key= lambda customer: customer.number_of_items)
+        ready_customers = sorted(list(ready_customers), key= lambda customer: (customer.number_of_items, customer.type))
         for customer in ready_customers:
             customer.select_register(self.grocery.registers)
         self.grocery.tick()
