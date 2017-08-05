@@ -41,18 +41,6 @@ class Customer(Subject):
         "Process items"
         self.number_of_items = self.number_of_items - 1/float(reducer_constant)
 
-    def tick(self, current_tick, grocery):
-        """Tick"""
-        if self.status == CUSTOMER_STATES["SHOPPING"]:
-            if current_tick == self.entry_time:
-                self.select_register(grocery.registers)
-        elif self.status == CUSTOMER_STATES["IN_LINE"]:
-            pass
-        elif self.status == CUSTOMER_STATES["SERVICING"]:
-            pass
-        elif self.status == CUSTOMER_STATES["CHECKED_OUT"]:
-            pass
-
 
 
 class CustomerA(Customer):
@@ -192,8 +180,10 @@ class Simulator(Observer):
         """Tick"""
         self.current_tick = self.current_tick + 1
         self.log()
-        for customer in self.customers:
-            customer.tick(self.current_tick, self.grocery)
+        ready_customers = [customer for customer in self.customers if customer.entry_time == self.current_tick]
+        ready_customers = sorted(list(ready_customers), key= lambda customer: customer.number_of_items)
+        for customer in ready_customers:
+            customer.select_register(self.grocery.registers)
         self.grocery.tick()
         if (self.grocery.is_serving_customers()):
             self.tick()
